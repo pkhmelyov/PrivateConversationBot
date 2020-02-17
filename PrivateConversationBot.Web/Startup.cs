@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PrivateConversationBot.Web.Extensions;
+using PrivateConversationBot.Web.Handlers;
 using Telegram.Bot.Framework;
+using Telegram.Bot.Framework.Abstractions;
 
 namespace PrivateConversationBot.Web
 {
@@ -37,7 +40,7 @@ namespace PrivateConversationBot.Web
             {
                 app.UseDeveloperExceptionPage();
 
-                app.UseTelegramBotLongPolling
+                app.UseTelegramBotLongPolling<ConversationBot>(ConfigureBot());
             }
             else
             {
@@ -58,6 +61,17 @@ namespace PrivateConversationBot.Web
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+
+        private IBotBuilder ConfigureBot()
+        {
+            return new BotBuilder()
+                .Use<ExceptionHandler>()
+                .UseWhen<WebhookLogger>(When.Webhook)
+                .UseWhen<UpdateMembersList>(When.MembersChanged)
+                .MapWhen(When.NewMessage, msgBranch => msgBranch
+                    .MapWhen(When.NewTextMessage, txtBranch => txtBranch
+                        .Use<TextEchoer>()));
         }
     }
 }
