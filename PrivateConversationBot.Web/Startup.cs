@@ -71,7 +71,14 @@ namespace PrivateConversationBot.Web
                 .UseWhen<UpdateMembersList>(When.MembersChanged)
                 .MapWhen(When.NewMessage, msgBranch => msgBranch
                     .MapWhen(When.NewTextMessage, txtBranch => txtBranch
-                        .Use<TextEchoer>()));
+                        .Use<TextEchoer>()
+                        .MapWhen(When.NewCommand, cmdBranch => cmdBranch
+                            .UseCommand<PingCommand>()
+                            .UseCommand<StartCommand>()
+                        )
+                    )
+                    .MapWhen<StickerHandler>(When.StickerMessage)
+                );
         }
     }
 }
