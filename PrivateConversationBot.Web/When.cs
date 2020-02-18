@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Http;
+using PrivateConversationBot.Web.DataAccess.Entities;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Types.Enums;
 
@@ -30,5 +31,17 @@ namespace PrivateConversationBot.Web
 
         public static bool CallbackQuery(IUpdateContext context) =>
             context.Update.CallbackQuery != null;
+
+        public static bool Authenticated(IUpdateContext context) =>
+            context.Items.TryGetValue(Constants.UpdateContextItemKeys.CurrentUser, out var item) && item is User;
+
+        public static bool Anonymous(IUpdateContext context) => !Authenticated(context);
+
+        public static bool IsAdmin(IUpdateContext context) =>
+            Authenticated(context) && ((User) context.Items[Constants.UpdateContextItemKeys.CurrentUser]).IsAdmin;
+
+        public static bool IsNotAdmin(IUpdateContext context) => !IsAdmin(context);
+
+        public static bool NewImage(IUpdateContext context) => context.Update.Message.Photo != null;
     }
 }
