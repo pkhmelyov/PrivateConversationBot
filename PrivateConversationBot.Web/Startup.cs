@@ -32,6 +32,8 @@ namespace PrivateConversationBot.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.ConfigureApplicationOptions(Configuration);
+
             services.AddControllersWithViews();
 
             services.AddTransient<ConversationBot>()
@@ -52,8 +54,10 @@ namespace PrivateConversationBot.Web
                 .AddScoped<AdminStickerForwarder>()
                 .AddScoped<ImageHandler>();
 
+            var appOptions = Configuration.Get<ApplicationOptions>();
+
             services.AddDbContext<PrivateConversationBotDbContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("PrivateConversationBotDbContext")));
+                options.UseNpgsql(appOptions.PostgreSqlConnectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -114,6 +118,11 @@ namespace PrivateConversationBot.Web
                         )
                     )
                 );
+        }
+    }public static class IServiceCollectionExtensions {
+        public static IServiceCollection ConfigureApplicationOptions(this IServiceCollection services, IConfiguration configurationRoot) {
+            return services
+                .Configure<ApplicationOptions>(configurationRoot);
         }
     }
 }

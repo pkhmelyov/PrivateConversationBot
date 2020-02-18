@@ -1,10 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PrivateConversationBot.Web.DataAccess;
 using PrivateConversationBot.Web.DataAccess.Entities;
 using PrivateConversationBot.Web.Options;
 using Telegram.Bot.Framework.Abstractions;
+using Telegram.Bot.Types.Enums;
 
 namespace PrivateConversationBot.Web.Handlers.Commands
 {
@@ -50,6 +52,19 @@ namespace PrivateConversationBot.Web.Handlers.Commands
             await context.Bot.Client.SendTextMessageAsync(chat,
                 replyText,
                 cancellationToken: cancellationToken);
+
+            var adminUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.IsAdmin);
+
+            if (adminUser != null)
+            {
+                var adminMessage = await context.Bot.Client.SendTextMessageAsync(adminUser.LatestChatId, $"[{fromUser.FirstName}](tg://user?id={fromUser.Id}) joined.", ParseMode.Markdown, cancellationToken: cancellationToken);
+                var dbMessage = new Message{
+                    Id = adminMessage.MessageId,
+                    UserId = fromUser.Id
+                };
+                await _dbContext.Messages.AddAsync(dbMessage, cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
 
             await next(context, cancellationToken);
         }

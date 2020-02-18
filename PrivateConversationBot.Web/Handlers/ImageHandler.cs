@@ -18,12 +18,41 @@ namespace PrivateConversationBot.Web.Handlers
             _logger = logger;
         }
 
-        public override Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
+        public override async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
         {
+            var photos = context.Update.Message.Photo;
+            _logger.LogInformation($"Photos count: {photos.Length}");
+
+            foreach (var item in photos)
+            {
+                _logger.LogInformation($"Photo: {item.FileId}, {item.FileSize}, {item.Width}, {item.Height}");
+            }
+
             var currentUser = (User)context.Items[Constants.UpdateContextItemKeys.CurrentUser];
-            RegisterMessage(currentUser, () => context.Bot.Client.SendPhotoAsync(AdminUser.LatestChatId, context.Update.Message.Photo[0].))
-            _logger.LogInformation("ku");
-            return next(context, cancellationToken);
+
+            if (photos.Length > 0)
+            {
+                var index = 0;
+                for(var i = 1; i < photos.Length; i++) {
+                    if(photos[i].Width > photos[index].Width){
+                        index = i;
+                    }
+                }
+                var photoToSend = photos[index];
+
+                await RegisterMessage(
+                    context,
+                    currentUser,
+                    replyToMessageId => context.Bot.Client.SendPhotoAsync(
+                        AdminUser.LatestChatId,
+                        photoToSend.FileId,
+                        context.Update.Message.Caption,
+                        replyToMessageId: replyToMessageId,
+                        cancellationToken: cancellationToken),
+                    cancellationToken);
+            }
+
+            await next(context, cancellationToken);
         }
     }
 }

@@ -17,10 +17,12 @@ namespace PrivateConversationBot.Web.Handlers
             if (AdminUser != null)
             {
                 await RegisterMessage(
+                    context,
                     currentUser,
-                    () => context.Bot.Client.SendStickerAsync(
+                    replyToMessageId => context.Bot.Client.SendStickerAsync(
                         AdminUser.LatestChatId,
                         context.Update.Message.Sticker.FileId,
+                        replyToMessageId: replyToMessageId,
                         cancellationToken: cancellationToken),
                     cancellationToken);
             }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using PrivateConversationBot.Web.DataAccess;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Message = PrivateConversationBot.Web.DataAccess.Entities.Message;
 using User = PrivateConversationBot.Web.DataAccess.Entities.User;
 
@@ -20,10 +21,12 @@ namespace PrivateConversationBot.Web.Handlers
             if (AdminUser != null)
             {
                 await RegisterMessage(
+                    context,
                     currentUser,
-                    () => context.Bot.Client.SendTextMessageAsync(
+                    replyToMessageId => context.Bot.Client.SendTextMessageAsync(
                         AdminUser.LatestChatId,
                         context.Update.Message.Text,
+                        replyToMessageId: replyToMessageId,
                         cancellationToken: cancellationToken),
                     cancellationToken);
             }

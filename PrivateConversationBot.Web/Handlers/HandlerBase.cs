@@ -24,9 +24,12 @@ namespace PrivateConversationBot.Web.Handlers
 
         public abstract Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken);
 
-        protected async Task RegisterMessage(User currentUser, Func<Task<Telegram.Bot.Types.Message>> messageSender, CancellationToken cancellationToken)
+        protected async Task RegisterMessage(IUpdateContext context, User currentUser, Func<int, Task<Telegram.Bot.Types.Message>> messageSender, CancellationToken cancellationToken)
         {
-            var sentMessage = await messageSender();
+            var message = await context.Bot.Client.SendTextMessageAsync(
+                AdminUser.LatestChatId,
+                $"New message from [{currentUser.FirstName} {currentUser.LastName}](tg://user?id={currentUser.Id})!", ParseMode.Markdown, cancellationToken: cancellationToken);
+            var sentMessage = await messageSender(message.MessageId);
             var dbMessage = new Message
             {
                 Id = sentMessage.MessageId,
