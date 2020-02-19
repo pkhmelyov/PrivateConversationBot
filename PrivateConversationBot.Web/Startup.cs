@@ -80,7 +80,7 @@ namespace PrivateConversationBot.Web
                 app.EnsureWebhookSet<ConversationBot>();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();

@@ -7,5 +7,6 @@ namespace PrivateConversationBot.Web.Options
     {
         public string WebhookDomain { get; set; }
         public string Admin { get; set; }
+        public bool UseTorProxy { get; set; }
     }
 }

@@ -12,15 +12,14 @@ namespace PrivateConversationBot.Web
 
         private static ITelegramBotClient CreateClient(CustomBotOptions<ConversationBot> options)
         {
-            //if (!options.UseTorProxy)
-            //{
-            //    return new TelegramBotClient(options.ApiToken);
-            //}
-            //else
-            //{
-            //    return new TelegramBotClient(options.ApiToken, new HttpToSocks5Proxy("127.0.0.1", 9150));
-            //}
-            return new TelegramBotClient(options.ApiToken, new HttpToSocks5Proxy("127.0.0.1", 9150));
+            if (!options.UseTorProxy)
+            {
+                return new TelegramBotClient(options.ApiToken);
+            }
+            else
+            {
+                return new TelegramBotClient(options.ApiToken, new HttpToSocks5Proxy("127.0.0.1", 9150));
+            }
         }
     }
 }
