@@ -54,7 +54,7 @@ namespace PrivateConversationBot.Web.Extensions
                 var options = scope.ServiceProvider.GetRequiredService<IOptions<CustomBotOptions<TBot>>>();
                 var url = new Uri(new Uri(options.Value.WebhookDomain), options.Value.WebhookPath);
                 logger.LogInformation("Setting webhook for bot \"{0}\" to URL \"{1}\"", typeof(TBot).Name, url);
-                bot.Client.SetWebhookAsync(url.AbsolutePath).GetAwaiter().GetResult();
+                bot.Client.SetWebhookAsync(url.AbsolutePath.TrimStart('/')).GetAwaiter().GetResult();
             }
 
             return app;
