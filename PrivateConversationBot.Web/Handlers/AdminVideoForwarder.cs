@@ -1,28 +1,31 @@
-﻿using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using PrivateConversationBot.Web.DataAccess;
 using Telegram.Bot.Framework.Abstractions;
-using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 
 namespace PrivateConversationBot.Web.Handlers
 {
-    public class AdminTextMessageForwarder : HandlerBase
+    public class AdminVideoForwarder : HandlerBase
     {
-        public AdminTextMessageForwarder(PrivateConversationBotDbContext dbContext) : base(dbContext) { }
+        public AdminVideoForwarder(PrivateConversationBotDbContext dbContext) : base(dbContext) { }
 
         public override async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
         {
+            var video = context.Update.Message.Video;
+
             await ReplyToAppropriateUser(
                 context,
                 context.Update.Message.ReplyToMessage?.MessageId ?? 0,
-                chatId => context.Bot.Client.SendTextMessageAsync(
+                chatId => context.Bot.Client.SendVideoAsync(
                     chatId,
-                    context.Update.Message.Text,
+                    new InputOnlineFile(video.FileId),
+                    video.Duration,
+                    video.Width,
+                    video.Height,
+                    context.Update.Message.Caption,
                     cancellationToken: cancellationToken),
                 cancellationToken);
-
             await next(context, cancellationToken);
         }
     }

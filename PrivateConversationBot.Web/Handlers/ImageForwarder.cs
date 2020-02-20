@@ -10,23 +10,13 @@ using Telegram.Bot.Framework.Abstractions;
 
 namespace PrivateConversationBot.Web.Handlers
 {
-    public class ImageHandler : HandlerBase
+    public class ImageForwarder : HandlerBase
     {
-        private readonly ILogger<ImageHandler> _logger;
-        public ImageHandler(PrivateConversationBotDbContext dbContext, ILogger<ImageHandler> logger) : base(dbContext)
-        {
-            _logger = logger;
-        }
+        public ImageForwarder(PrivateConversationBotDbContext dbContext) : base(dbContext) { }
 
         public override async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
         {
             var photos = context.Update.Message.Photo;
-            _logger.LogInformation($"Photos count: {photos.Length}");
-
-            foreach (var item in photos)
-            {
-                _logger.LogInformation($"Photo: {item.FileId}, {item.FileSize}, {item.Width}, {item.Height}");
-            }
 
             var currentUser = (User)context.Items[Constants.UpdateContextItemKeys.CurrentUser];
 
@@ -48,6 +38,7 @@ namespace PrivateConversationBot.Web.Handlers
                         photoToSend.FileId,
                         context.Update.Message.Caption,
                         replyToMessageId: replyToMessageId,
+                        disableNotification: true,
                         cancellationToken: cancellationToken),
                     cancellationToken);
             }

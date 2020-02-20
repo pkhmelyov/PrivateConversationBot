@@ -3,25 +3,32 @@ using System.Threading.Tasks;
 using PrivateConversationBot.Web.DataAccess;
 using PrivateConversationBot.Web.DataAccess.Entities;
 using Telegram.Bot.Framework.Abstractions;
+using Telegram.Bot.Types.InputFiles;
 
 namespace PrivateConversationBot.Web.Handlers
 {
-    public class StickerForwarder : HandlerBase
+    public class VideoForwarder : HandlerBase
     {
-        public StickerForwarder(PrivateConversationBotDbContext context) : base(context) { }
+        public VideoForwarder(PrivateConversationBotDbContext dbContext) : base(dbContext) { }
 
         public override async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
         {
-            var currentUser = (User) context.Items[Constants.UpdateContextItemKeys.CurrentUser];
+            var video = context.Update.Message.Video;
+
+            var currentUser = (User)context.Items[Constants.UpdateContextItemKeys.CurrentUser];
 
             if (AdminUser != null)
             {
                 await RegisterMessage(
                     context,
                     currentUser,
-                    replyToMessageId => context.Bot.Client.SendStickerAsync(
+                    replyToMessageId => context.Bot.Client.SendVideoAsync(
                         AdminUser.LatestChatId,
-                        context.Update.Message.Sticker.FileId,
+                        new InputOnlineFile(video.FileId),
+                        video.Duration,
+                        video.Width,
+                        video.Height,
+                        context.Update.Message.Caption,
                         replyToMessageId: replyToMessageId,
                         disableNotification: true,
                         cancellationToken: cancellationToken),

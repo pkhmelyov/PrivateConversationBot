@@ -27,6 +27,7 @@ namespace PrivateConversationBot.Web.Handlers
                         AdminUser.LatestChatId,
                         context.Update.Message.Text,
                         replyToMessageId: replyToMessageId,
+                        disableNotification: true,
                         cancellationToken: cancellationToken),
                     cancellationToken);
             }

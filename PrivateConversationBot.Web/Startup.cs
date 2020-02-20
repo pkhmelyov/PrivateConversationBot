@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +12,6 @@ using PrivateConversationBot.Web.Handlers.Commands;
 using PrivateConversationBot.Web.Options;
 using Telegram.Bot.Framework;
 using Telegram.Bot.Framework.Abstractions;
-using Telegram.Bot.Types;
 
 namespace PrivateConversationBot.Web
 {
@@ -52,7 +47,10 @@ namespace PrivateConversationBot.Web
                 .AddScoped<AdminTextMessageForwarder>()
                 .AddScoped<StickerForwarder>()
                 .AddScoped<AdminStickerForwarder>()
-                .AddScoped<ImageHandler>();
+                .AddScoped<ImageForwarder>()
+                .AddScoped<AdminImageForwarder>()
+                .AddScoped<VideoForwarder>()
+                .AddScoped<AdminVideoForwarder>();
 
             var appOptions = Configuration.Get<ApplicationOptions>();
 
@@ -114,7 +112,12 @@ namespace PrivateConversationBot.Web
                             .UseWhen<AdminStickerForwarder>(When.IsAdmin)
                         )
                         .MapWhen(When.NewImage, imgBranch => imgBranch
-                            .Use<ImageHandler>()
+                            .UseWhen<ImageForwarder>(When.IsNotAdmin)
+                            .UseWhen<AdminImageForwarder>(When.IsAdmin)
+                        )
+                        .MapWhen(When.NewVideo, vidBranch => vidBranch
+                            .UseWhen<VideoForwarder>(When.IsNotAdmin)
+                            .UseWhen<AdminVideoForwarder>(When.IsAdmin)
                         )
                     )
                 );

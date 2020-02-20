@@ -13,7 +13,7 @@ namespace PrivateConversationBot.Web.Handlers
         {
             await ReplyToAppropriateUser(
                 context,
-                context.Update.Message.ReplyToMessage.MessageId,
+                context.Update.Message.ReplyToMessage?.MessageId ?? 0,
                 chatId => context.Bot.Client.SendStickerAsync(
                     chatId,
                     context.Update.Message.Sticker.FileId,
