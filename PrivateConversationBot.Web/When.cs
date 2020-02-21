@@ -42,8 +42,12 @@ namespace PrivateConversationBot.Web
 
         public static bool IsNotAdmin(IUpdateContext context) => !IsAdmin(context);
 
-        public static bool NewImage(IUpdateContext context) => context.Update.Message?.Photo != null;
+        public static bool NewImage(IUpdateContext context) => context.Update.Message?.Photo != null && context.Update.Message.Photo.Any();
 
         public static bool NewVideo(IUpdateContext context) => context.Update.Message?.Video != null;
+
+        public static bool NewVoice(IUpdateContext context) => context.Update.Message?.Voice != null;
+
+        public static bool NewVideoNote(IUpdateContext context) => context.Update.Message.VideoNote != null;
     }
 }

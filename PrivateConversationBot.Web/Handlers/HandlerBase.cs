@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PrivateConversationBot.Web.DataAccess;
 using PrivateConversationBot.Web.DataAccess.Entities;
+using Telegram.Bot;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Types.Enums;
 
@@ -24,19 +25,36 @@ namespace PrivateConversationBot.Web.Handlers
 
         public abstract Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken);
 
-        protected async Task RegisterMessage(IUpdateContext context, User currentUser, Func<int, Task<Telegram.Bot.Types.Message>> messageSender, CancellationToken cancellationToken)
+        protected async Task RegisterMessage(
+            IUpdateContext context,
+            Func<
+                int,
+                ITelegramBotClient,
+                Telegram.Bot.Types.Message,
+                Task<Telegram.Bot.Types.Message>
+            > messageSender,
+            CancellationToken cancellationToken)
         {
-            var message = await context.Bot.Client.SendTextMessageAsync(
-                AdminUser.LatestChatId,
-                $"New message from [{currentUser.FirstName} {currentUser.LastName}](tg://user?id={currentUser.Id})!", ParseMode.Markdown, cancellationToken: cancellationToken);
-            var sentMessage = await messageSender(message.MessageId);
-            var dbMessage = new Message
+            if (AdminUser != null)
             {
-                Id = sentMessage.MessageId,
-                UserId = currentUser.Id
-            };
-            await DbContext.Messages.AddAsync(dbMessage, cancellationToken);
-            await DbContext.SaveChangesAsync(cancellationToken);
+                var currentUser = (User) context.Items[Constants.UpdateContextItemKeys.CurrentUser];
+                var message = await context.Bot.Client.SendTextMessageAsync(
+                    AdminUser.LatestChatId,
+                    $"[{currentUser.FirstName} {currentUser.LastName}](tg://user?id={currentUser.Id}) sent new message!",
+                    ParseMode.Markdown,
+                    cancellationToken: cancellationToken);
+                var sentMessage = await messageSender(
+                    message.MessageId,
+                    context.Bot.Client,
+                    context.Update.Message);
+                var dbMessage = new Message
+                {
+                    Id = sentMessage.MessageId,
+                    UserId = currentUser.Id
+                };
+                await DbContext.Messages.AddAsync(dbMessage, cancellationToken);
+                await DbContext.SaveChangesAsync(cancellationToken);
+            }
         }
 
         public async Task ReplyToAppropriateUser(IUpdateContext context, int replyMessageId, Func<long, Task> messageSender,

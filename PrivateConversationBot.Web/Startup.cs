@@ -50,7 +50,9 @@ namespace PrivateConversationBot.Web
                 .AddScoped<ImageForwarder>()
                 .AddScoped<AdminImageForwarder>()
                 .AddScoped<VideoForwarder>()
-                .AddScoped<AdminVideoForwarder>();
+                .AddScoped<AdminVideoForwarder>()
+                .AddScoped<VoiceForwarder>()
+                .AddScoped<VideoNoteForwarder>();
 
             var appOptions = Configuration.Get<ApplicationOptions>();
 
@@ -118,6 +120,12 @@ namespace PrivateConversationBot.Web
                         .MapWhen(When.NewVideo, vidBranch => vidBranch
                             .UseWhen<VideoForwarder>(When.IsNotAdmin)
                             .UseWhen<AdminVideoForwarder>(When.IsAdmin)
+                        )
+                        .MapWhen(When.NewVoice, voiceBranch => voiceBranch
+                            .UseWhen<VoiceForwarder>(When.IsNotAdmin)
+                        )
+                        .MapWhen(When.NewVideoNote, vNoteBranch => vNoteBranch
+                            .UseWhen<VideoNoteForwarder>(When.IsNotAdmin)
                         )
                     )
                 );
