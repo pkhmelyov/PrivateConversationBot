@@ -17,7 +17,14 @@ namespace PrivateConversationBot.Web
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+            Host.CreateDefaultBuilder(args).ConfigureWebHost(builder =>
+                {
+                    builder.ConfigureKestrel((context, options) =>
+                    {
+                        // Handle requests up to 50 MB
+                        options.Limits.MaxRequestBodySize = 1073741824;
+                    });
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

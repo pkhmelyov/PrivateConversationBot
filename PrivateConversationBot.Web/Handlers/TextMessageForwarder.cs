@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using PrivateConversationBot.Web.DataAccess;
 using Telegram.Bot.Framework.Abstractions;
+using Telegram.Bot.Types.Enums;
 
 namespace PrivateConversationBot.Web.Handlers
 {

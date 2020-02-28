@@ -49,5 +49,7 @@ namespace PrivateConversationBot.Web
         public static bool NewVoice(IUpdateContext context) => context.Update.Message?.Voice != null;
 
         public static bool NewVideoNote(IUpdateContext context) => context.Update.Message.VideoNote != null;
+
+        public static bool NewChannelPost(IUpdateContext context) => context.Update.Type == UpdateType.ChannelPost;
     }
 }

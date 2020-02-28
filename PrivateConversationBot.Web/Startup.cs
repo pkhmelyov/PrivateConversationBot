@@ -1,6 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,12 +53,16 @@ namespace PrivateConversationBot.Web
                 .AddScoped<VideoForwarder>()
                 .AddScoped<AdminVideoForwarder>()
                 .AddScoped<VoiceForwarder>()
-                .AddScoped<VideoNoteForwarder>();
+                .AddScoped<VideoNoteForwarder>()
+                .AddScoped<GetUsersCommand>()
+                .AddScoped<ChannelDocumentsHandler>();
 
             var appOptions = Configuration.Get<ApplicationOptions>();
 
             services.AddDbContext<PrivateConversationBotDbContext>(options =>
                 options.UseNpgsql(appOptions.PostgreSqlConnectionString));
+
+            services.Configure<FormOptions>(options => { options.MultipartBodyLengthLimit = 1073741824; });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -102,7 +107,12 @@ namespace PrivateConversationBot.Web
                 .UseWhen<WebhookLogger>(When.Webhook)
                 .MapWhen(When.NewMessage, msgBranch => msgBranch
                     .Use<Authenticator>()
-                    .MapWhen(When.NewCommand, cmdBranch => cmdBranch.UseCommand<StartCommand>("start"))
+                    .MapWhen(When.NewCommand, cmdBranch => cmdBranch
+                        .UseCommand<StartCommand>("start")
+                        .MapWhen(When.IsAdmin, adminBranch => adminBranch
+                            .UseCommand<GetUsersCommand>("getusers")
+                        )
+                    )
                     .MapWhen(When.Anonymous, anonymousBranch => { })
                     .MapWhen(When.Authenticated, authenticatedBranch => authenticatedBranch
                         .MapWhen(When.NewTextMessage, txtBranch => txtBranch
@@ -128,9 +138,12 @@ namespace PrivateConversationBot.Web
                             .UseWhen<VideoNoteForwarder>(When.IsNotAdmin)
                         )
                     )
-                );
+                )
+                .UseWhen<ChannelDocumentsHandler>(ctx => When.NewChannelPost(ctx) && ctx.Update.ChannelPost.Document != null);
         }
-    }public static class IServiceCollectionExtensions {
+    }
+
+    public static class IServiceCollectionExtensions {
         public static IServiceCollection ConfigureApplicationOptions(this IServiceCollection services, IConfiguration configurationRoot) {
             return services
                 .Configure<ApplicationOptions>(configurationRoot);
