@@ -52,7 +52,8 @@ namespace PrivateConversationBot.Web
                 .AddScoped<VideoForwarder>()
                 .AddScoped<AdminVideoForwarder>()
                 .AddScoped<VoiceForwarder>()
-                .AddScoped<VideoNoteForwarder>();
+                .AddScoped<VideoNoteForwarder>()
+                .AddScoped<UsersCommand>();
 
             var appOptions = Configuration.Get<ApplicationOptions>();
 

@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using PrivateConversationBot.Web.DataAccess;
 using Telegram.Bot.Framework.Abstractions;
 
@@ -8,10 +9,12 @@ namespace PrivateConversationBot.Web.Handlers
     public class Authenticator : IUpdateHandler
     {
         private readonly PrivateConversationBotDbContext _dbContext;
+        private readonly ILogger<Authenticator> _logger;
 
-        public Authenticator(PrivateConversationBotDbContext dbContext)
+        public Authenticator(PrivateConversationBotDbContext dbContext, ILogger<Authenticator> logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
@@ -24,6 +27,7 @@ namespace PrivateConversationBot.Web.Handlers
                 await _dbContext.SaveChangesAsync(cancellationToken);
             }
             context.Items[Constants.UpdateContextItemKeys.CurrentUser] = dbUser;
+            _logger.LogCritical($"{dbUser.Username} - {dbUser.IsAdmin}");
             await next(context, cancellationToken);
         }
     }
