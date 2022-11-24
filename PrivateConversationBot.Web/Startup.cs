@@ -63,8 +63,6 @@ namespace PrivateConversationBot.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, PrivateConversationBotDbContext dbContext)
         {
-            dbContext.Database.Migrate();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -93,6 +91,8 @@ namespace PrivateConversationBot.Web
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+            
+            dbContext.Database.Migrate();
         }
 
         private IBotBuilder ConfigureBot()
